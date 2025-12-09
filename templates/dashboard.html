@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ducks in a Row · Daily Dashboard</title>
+  <style>
+    :root {
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      color: #0f172a;
+      background: #f8fafc;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 960px;
+      padding: 2rem 1.25rem 3rem;
+      line-height: 1.6;
+    }
+    header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      margin-bottom: 1.5rem;
+    }
+    h1 {
+      margin: 0;
+      font-size: 1.9rem;
+      letter-spacing: -0.01em;
+    }
+    p.subtitle {
+      margin: 0;
+      color: #334155;
+    }
+    .card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      padding: 1.25rem 1.4rem;
+      margin-bottom: 1rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+    .metric {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+    .metric .label {
+      font-size: 0.9rem;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .metric .value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.75rem;
+    }
+    th, td {
+      padding: 0.6rem;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+    }
+    th {
+      background: #f1f5f9;
+      color: #0f172a;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+    td.label-col {
+      font-weight: 600;
+      color: #0f172a;
+    }
+    .empty {
+      color: #64748b;
+      font-style: italic;
+    }
+    footer {
+      margin-top: 1rem;
+      color: #94a3b8;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🦆 Ducks in a Row</h1>
+    <p class="subtitle">Daily dashboard with streaks, highs, and correlation insights.</p>
+  </header>
+
+  <section class="grid">
+    <div class="card metric">
+      <div class="label">Entries Logged</div>
+      <div class="value">{{ stats.entries }}</div>
+    </div>
+    <div class="card metric">
+      <div class="label">Average Energy</div>
+      <div class="value">{{ '%.2f'|format(stats.average_energy) }}/10</div>
+    </div>
+    <div class="card metric">
+      <div class="label">Current Streak</div>
+      <div class="value">{{ stats.streak_days }} day{{ 's' if stats.streak_days != 1 else '' }}</div>
+    </div>
+    <div class="card metric">
+      <div class="label">Best Energy Day</div>
+      {% if stats.high_energy_day %}
+        <div class="value">{{ stats.high_energy_day.date }} ({{ stats.high_energy_day.energy }}/10)</div>
+      {% else %}
+        <div class="value empty">No entries yet</div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Correlation: Energy by Mood Tone</h2>
+    {% if insights.mood_energy %}
+    <table>
+      <thead>
+        <tr><th>Mood</th><th>Average Energy</th><th>Days</th></tr>
+      </thead>
+      <tbody>
+        {% for row in insights.mood_energy %}
+        <tr>
+          <td class="label-col">{{ row.mood }}</td>
+          <td>{{ '%.2f'|format(row.average_energy) }}/10</td>
+          <td>{{ row.count }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <p class="empty">Log a few days to see how mood lines up with energy.</p>
+    {% endif %}
+  </section>
+
+  <section class="grid">
+    <div class="card">
+      <h2>Chores that Lift (or Sink) Energy</h2>
+      {% if insights.chore_energy %}
+      <table>
+        <thead>
+          <tr><th>Chore</th><th>Average Energy</th><th>Days</th></tr>
+        </thead>
+        <tbody>
+          {% for row in insights.chore_energy %}
+          <tr>
+            <td class="label-col">{{ row.name }}</td>
+            <td>{{ '%.2f'|format(row.average_energy) }}/10</td>
+            <td>{{ row.count }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <p class="empty">No chores logged yet.</p>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <h2>Skills vs. Energy</h2>
+      {% if insights.skill_energy %}
+      <table>
+        <thead>
+          <tr><th>Skill</th><th>Average Energy</th><th>Days</th></tr>
+        </thead>
+        <tbody>
+          {% for row in insights.skill_energy %}
+          <tr>
+            <td class="label-col">{{ row.name }}</td>
+            <td>{{ '%.2f'|format(row.average_energy) }}/10</td>
+            <td>{{ row.count }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <p class="empty">No skills logged yet.</p>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Distinct Chores &amp; Skills</h2>
+    <p><strong>Chores:</strong> {% if stats.distinct_chores %}{{ stats.distinct_chores|join(', ') }}{% else %}<span class="empty">None logged yet</span>{% endif %}</p>
+    <p><strong>Skills:</strong> {% if stats.distinct_skills %}{{ stats.distinct_skills|join(', ') }}{% else %}<span class="empty">None logged yet</span>{% endif %}</p>
+  </section>
+
+  <footer>
+    Ducks in a Row · stay consistent, spot trends, and celebrate the highs.
+  </footer>
+</body>
+</html>
