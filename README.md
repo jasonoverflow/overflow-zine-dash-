@@ -15,11 +15,29 @@ The CLI only requires Python 3.8+. For the JSON API you'll also need Flask:
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
-pip install Flask
+pip install -r requirements.txt
 ```
 
 ```bash
 python tracker.py --help
+```
+
+### Quickstart (sanity check)
+1) Log a sample day (creates `data/entries.json` automatically):
+```bash
+python tracker.py add --energy 6 --mood-tone mellow --chore dishes --skill writing
+```
+
+2) View stats in the terminal:
+```bash
+python tracker.py stats
+```
+
+3) Bring up the dashboard in a browser to verify the look and feel:
+```bash
+export FLASK_APP=api_server.py
+flask run --host 0.0.0.0 --port 5000
+# visit http://localhost:5000/dashboard
 ```
 
 ## Usage

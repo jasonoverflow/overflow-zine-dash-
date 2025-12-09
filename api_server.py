@@ -15,7 +15,7 @@ from flask import Flask, jsonify, render_template, request
 
 import tracker
 
-DATA_FILE = Path(os.getenv("TRACKER_DATA_FILE", tracker.DATA_PATH))
+DATA_FILE = Path(os.getenv("TRACKER_DATA_FILE", str(tracker.DATA_PATH)))
 
 app = Flask(__name__)
 
